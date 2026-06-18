@@ -1,14 +1,31 @@
-export PROTON_PATH=$(cat ~/.config/csprc | grep PROTON_PATH | cut -d '=' -f 2)
-echo $PROTON_PATH
-export STEAM_COMPAT_DATA_PATH=$(cat ~/.config/csprc | grep STEAM_COMPAT_DATA_PATH | cut -d '=' -f 2)
-export STEAM_COMPAT_CLIENT_INSTALL_PATH=$(cat ~/.config/csprc | grep STEAM_COMPAT_CLIENT_INSTALL_PATH | cut -d '=' -f 2)
+#!/bin/bash
 
-echo "Setting Windows version to win81..."
-$PROTON_PATH/proton run winecfg -v win81
-if [ $? -ne 0 ]; then
-    echo "Failed to set Windows version to win81"
+# CSP launcher — uses Wine Staging with the prefix written by csp-installer.sh
+# Updated by xion
+
+CSPRC="$HOME/.config/csprc"
+
+if [ ! -f "$CSPRC" ]; then
+    echo "csprc not found. Please run csp-installer.sh first." 1>&2
     exit 1
 fi
 
-echo "Starting CSP..."
-$PROTON_PATH/proton run $STEAM_COMPAT_DATA_PATH/pfx/drive_c/Program\ Files/CELSYS/CLIP\ STUDIO\ 1.5/CLIP\ STUDIO\ PAINT/CLIPStudioPaint.exe
+export WINEPREFIX=$(grep '^WINEPREFIX=' "$CSPRC" | cut -d '=' -f 2)
+export WINEARCH=$(grep '^WINEARCH=' "$CSPRC" | cut -d '=' -f 2)
+
+if [ -z "$WINEPREFIX" ]; then
+    echo "WINEPREFIX not set in $CSPRC" 1>&2
+    exit 1
+fi
+
+CSP_EXE="$WINEPREFIX/drive_c/Program Files/CELSYS/CLIP STUDIO 1.5/CLIP STUDIO PAINT/CLIPStudioPaint.exe"
+
+if [ ! -f "$CSP_EXE" ]; then
+    echo "CLIPStudioPaint.exe not found at:" 1>&2
+    echo "  $CSP_EXE" 1>&2
+    echo "Please run csp-installer.sh to install CSP first." 1>&2
+    exit 1
+fi
+
+echo "Starting Clip Studio Paint..."
+wine "$CSP_EXE"
