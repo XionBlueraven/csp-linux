@@ -3,10 +3,10 @@
 # CSP launcher — uses Wine Staging with the prefix written by csp-installer.sh
 # Updated by xion
 
-CSPRC="$HOME/.config/csprc"
+CSPRC="$HOME/.config/clip-studio-rc"
 
 if [ ! -f "$CSPRC" ]; then
-    echo "csprc not found. Please run csp-installer.sh first." 1>&2
+    echo "clip-studio-rc not found. Please run csp-installer.sh first." 1>&2
     exit 1
 fi
 
