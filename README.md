@@ -22,6 +22,8 @@ The original project used a Proton-style workflow with Steam compatibility paths
 | Config file | `~/.config/csprc`  | `~/.config/clip-studio-rc`  |
 | Launcher name | `csp-linux`  | `clip-studio`  |
 | Launch method | Proton-based launcher flow  | `wine` launching `CLIPStudioPaint.exe` directly  |
+| CJK Fonts | Not available  | Supported  |
+
 
 ## Why Wine Staging
 
@@ -33,6 +35,7 @@ Install the required tools before running the installer:
 
 ```bash
 wine-staging
+winetricks
 wget
 pv
 ```
@@ -40,7 +43,7 @@ pv
 On Arch-based systems such as CachyOS, the typical command is:
 
 ```bash
-sudo pacman -S wine-staging wget pv
+sudo pacman -S wine-staging wget pv winetricks
 ```
 
 The installer also includes distro detection and prints dependency guidance for common Arch-based and Debian/Ubuntu-based systems when required tools are missing.
@@ -71,7 +74,7 @@ Supported version lines are:
 - v1 -> 1.13.2
 - v2 -> 2.0.6
 - v3 -> 3.0.8
-- v4 -> 4.0.3
+- v4 -> 4.0.10
 - v5 -> 5.0.4
 
 These follow the perpetual-license-safe `x.0.x` branch choices used by the installer.
