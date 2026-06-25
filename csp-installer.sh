@@ -4,13 +4,13 @@ set -euo pipefail
 
 # Custom CSP installer for CachyOS/Arch
 # Based on minsiam/csp-linux — updated by xion
-# Uses: system wine-staging (no GE-Proton, no Steam Runtime needed)
+# Uses: system wine-staging + CJK font support  (no GE-Proton, no Steam Runtime needed)
 
 # Installer versions (latest patch for each perpetual license tier):
 # v1 → CSP_1132w (v1.13.2) — last v1.x release
 # v2 → CSP_206w (v2.0.6) — perpetual v2 covers v2.0.x only
 # v3 → CSP_308w (v3.0.8) — perpetual v3 covers v3.0.x only
-# v4 → CSP_403w (v4.0.3) — perpetual v4 covers v4.0.x only
+# v4 → CSP_403w (v4.0.10) — perpetual v4 covers v4.0.x only
 # v5 → CSP_504w (v5.0.4) — perpetual v5 covers v5.0.x only (latest)
 
 export CSP_PATH="$HOME/.local/share/clip-studio"
@@ -31,7 +31,7 @@ OPTIONS:
 1 → v1.13.2 (perpetual v1)
 2 → v2.0.6 (perpetual v2, latest v2.0.x)
 3 → v3.0.8 (perpetual v3, latest v3.0.x)
-4 → v4.0.3 (perpetual v4, latest v4.0.x)
+4 → v4.0.10 (perpetual v4, latest v4.0.x)
 5 → v5.0.4 (perpetual v5, latest v5.0.x)
 help Show this message
 uninstall Uninstall CSP
@@ -60,11 +60,11 @@ export CSP_PATH="$CSP_PATH"
 export WINEPREFIX="$WINEPREFIX"
 export WINEARCH="$WINEARCH"
 TARGET_EXE="$WINEPREFIX/drive_c/Program Files/CELSYS/CLIP STUDIO 1.5/CLIP STUDIO PAINT/CLIPStudioPaint.exe"
-if [ ! -f "$TARGET_EXE" ]; then
-    TARGET_EXE=\$(find "$WINEPREFIX/drive_c" -type f -iname 'CLIPStudioPaint.exe' 2>/dev/null | head -n 1 || true)
+if [ ! -f "\$TARGET_EXE" ]; then
+    TARGET_EXE=\$(find "\$WINEPREFIX/drive_c" -type f -iname 'CLIPStudioPaint.exe' 2>/dev/null | head -n 1 || true)
 fi
-[ -n "$TARGET_EXE" ] && [ -f "$TARGET_EXE" ] || { echo "Clip Studio executable not found in $WINEPREFIX" >&2; exit 1; }
-exec wine "$TARGET_EXE" "$@"
+[ -n "\$TARGET_EXE" ] && [ -f "\$TARGET_EXE" ] || { echo "Clip Studio executable not found in \$WINEPREFIX" >&2; exit 1; }
+exec wine "\$TARGET_EXE" "\$@"
 EOF2
     chmod +x "$LAUNCHER_PATH"
     ln -snf "$LAUNCHER_PATH" "$SYMLINK_PATH"
@@ -117,11 +117,14 @@ case "$1" in
         ;;
 esac
 
-for dep in wget pv wine find chmod ln readlink; do
+# Dependencies check
+for dep in wget pv wine find chmod ln readlink winetricks; do
     if ! command -v "$dep" >/dev/null 2>&1; then
         echo "Please install '$dep' before running this script" >&2
         if [ "$dep" = "wine" ]; then
             echo "On CachyOS/Arch: sudo pacman -S wine-staging"
+        elif [ "$dep" = "winetricks" ]; then
+            echo "On CachyOS/Arch: sudo pacman -S winetricks"
         fi
         exit 1
     fi
@@ -167,10 +170,10 @@ case "$CSP_VERSION" in
         }
         ;;
     4)
-        CSP_SETUP="CSP_403w_setup.exe"
+        CSP_SETUP="CSP_4010w_setup.exe"
         [ -f "$DOWNLOADS_PATH/$CSP_SETUP" ] || {
-            echo "Downloading CSP v4.0.3 installer (latest perpetual v4)..."
-            wget -q --show-progress -O "$DOWNLOADS_PATH/$CSP_SETUP" "https://vd.clipstudio.net/clipcontent/paint/app/403/CSP_403w_setup.exe"
+            echo "Downloading CSP v4.0.10  installer (latest perpetual v4)..."
+            wget -q --show-progress -O "$DOWNLOADS_PATH/$CSP_SETUP" "https://vd.clipstudio.net/clipcontent/paint/app/4010/CSP_4010w_setup.exe"
         }
         ;;
     5)
@@ -189,6 +192,12 @@ wineboot --init
 echo "Setting Windows version to win81..."
 winecfg -v win81
 
+# --- AUTOMATED FONT INSTALLATION ---
+echo ""
+echo "Installing CJK fonts (Chinese, Japanese, Korean) to prevent text issues..."
+# Use -q for quiet mode to avoid multiple pop-ups
+WINEPREFIX="$WINEPREFIX" winetricks -q cjkfonts || echo "Warning: CJK font installation failed. You may see squares instead of text in some menus."
+
 echo ""
 echo "Installing CSP v${CSP_VERSION} using Wine Staging..."
 echo "Complete the installer as normal, then press [Enter] here when done."
@@ -205,5 +214,5 @@ write_config
 install_launcher
 
 echo ""
-echo "CSP is now installed!"
+echo "CSP is now installed with CJK fonts configured!"
 echo "Run clip-studio to start CSP."
